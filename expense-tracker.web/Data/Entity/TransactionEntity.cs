@@ -9,7 +9,7 @@ public class TransactionEntity
     public int Id { get; set; }
 
     public decimal Value { get; set; }
-    
+
     [Column(TypeName = "nvarchar(3)")]
     public string Currency { get; set; }
 
@@ -25,4 +25,7 @@ public class TransactionEntity
     public string? Location { get; set; }
 
     public bool IsIncome { get; set; }
+
+    public string UserId { get; set; }
+    public CustomUserEntity UserEntity { get; set; }
 }

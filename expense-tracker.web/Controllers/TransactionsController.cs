@@ -2,6 +2,7 @@ using System.Text;
 using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
 using expense_tracker.web.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -11,26 +12,33 @@ namespace expense_tracker.web.Controllers
     public class TransactionsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<CustomUserEntity> _userManager;
 
-        public TransactionsController(ApplicationDbContext context)
+        public TransactionsController(ApplicationDbContext context, UserManager<CustomUserEntity> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Transactions
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Transactions.ToListAsync());
+            return View(await _context.Transactions.Where(t =>
+                t.UserId.Equals(_userManager.GetUserId(User))).OrderByDescending(t => t.Date).ToListAsync());
         }
 
         public async Task<IActionResult> Expenses()
         {
-            return View("Index", await _context.Transactions.Where(t => !t.IsIncome).ToListAsync());
+            return View("Index",
+                await _context.Transactions.Where(t => !t.IsIncome && t.UserId.Equals(_userManager.GetUserId(User)))
+                    .OrderByDescending(t => t.Date).ToListAsync());
         }
 
         public async Task<IActionResult> Incomes()
         {
-            return View("Index", await _context.Transactions.Where(t => t.IsIncome).ToListAsync());
+            return View("Index",
+                await _context.Transactions.Where(t => t.IsIncome && t.UserId.Equals(_userManager.GetUserId(User)))
+                    .OrderByDescending(t => t.Date).ToListAsync());
         }
 
         public async Task<IActionResult> MonthlyBalance(int year, int month)
@@ -114,8 +122,13 @@ namespace expense_tracker.web.Controllers
             [Bind("Id,Value,Currency,Name,Note,Date,Location,IsIncome")]
             TransactionEntity transactionEntity)
         {
+            ModelState.Remove("UserId");
+            ModelState.Remove("UserEntity");
+
             if (ModelState.IsValid)
             {
+                transactionEntity.UserId = _userManager.GetUserId(User)!;
+                transactionEntity.UserEntity = (await _userManager.GetUserAsync(User))!;
                 _context.Add(transactionEntity);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -220,7 +233,8 @@ namespace expense_tracker.web.Controllers
 
         public async Task<IList<TransactionEntity>> GetTransactions()
         {
-            return await _context.Transactions.ToListAsync();
+            return await _context.Transactions.Where(t => t.UserId.Equals(_userManager.GetUserId(User)))
+                .OrderByDescending(t => t.Date).ToListAsync();
         }
     }
 }

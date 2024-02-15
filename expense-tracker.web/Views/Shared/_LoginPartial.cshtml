@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
+@using expense_tracker.web.Data.Entity
+@inject SignInManager<CustomUserEntity> SignInManager
+@inject UserManager<CustomUserEntity> UserManager
 
 <ul class="navbar-nav">
     @if (SignInManager.IsSignedIn(User))

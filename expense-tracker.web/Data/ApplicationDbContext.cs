@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.web.Data;
 
-public class ApplicationDbContext : IdentityDbContext
+public class ApplicationDbContext : IdentityDbContext<CustomUserEntity>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
