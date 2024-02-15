@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
+using expense_tracker.web.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.web.Controllers
 {
@@ -23,6 +19,54 @@ namespace expense_tracker.web.Controllers
         public async Task<IActionResult> Index()
         {
             return View(await _context.Transactions.ToListAsync());
+        }
+
+        public async Task<IActionResult> Expenses()
+        {
+            return View("Index", await _context.Transactions.Where(t => !t.IsIncome).ToListAsync());
+        }
+
+        public async Task<IActionResult> Incomes()
+        {
+            return View("Index", await _context.Transactions.Where(t => t.IsIncome).ToListAsync());
+        }
+
+        public async Task<IActionResult> MonthlyBalance(int year, int month)
+        {
+            if (year == 0 || month == 0)
+            {
+                year = DateTime.UtcNow.Year;
+                month = DateTime.UtcNow.Month;
+            }
+
+            var transactions = await _context.Transactions
+                .Where(t => t.Date.Year == year && t.Date.Month == month)
+                .ToListAsync();
+
+            var balanceByCurrency = transactions
+                .GroupBy(t => t.Currency)
+                .Select(group =>
+                {
+                    var incomes = group.Where(t => t.IsIncome).Sum(t => t.Value);
+                    var expenses = group.Where(t => !t.IsIncome).Sum(t => t.Value);
+                    return new BalanceByCurrency
+                    {
+                        Currency = group.Key,
+                        TotalIncome = incomes,
+                        TotalExpenses = expenses,
+                        Balance = incomes - expenses
+                    };
+                })
+                .ToList();
+
+            var model = new MonthlyBalanceViewModel
+            {
+                Year = year,
+                Month = month,
+                BalancesByCurrency = balanceByCurrency
+            };
+
+            return View(model);
         }
 
         // GET: Transactions/Details/5
@@ -54,7 +98,9 @@ namespace expense_tracker.web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Value,Currency,Name,Note,Date,Location,IsIncome")] TransactionEntity transactionEntity)
+        public async Task<IActionResult> Create(
+            [Bind("Id,Value,Currency,Name,Note,Date,Location,IsIncome")]
+            TransactionEntity transactionEntity)
         {
             if (ModelState.IsValid)
             {
@@ -62,6 +108,7 @@ namespace expense_tracker.web.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(transactionEntity);
         }
 
@@ -78,6 +125,7 @@ namespace expense_tracker.web.Controllers
             {
                 return NotFound();
             }
+
             return View(transactionEntity);
         }
 
@@ -86,7 +134,9 @@ namespace expense_tracker.web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Value,Currency,Name,Note,Date,Location,IsIncome")] TransactionEntity transactionEntity)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,Value,Currency,Name,Note,Date,Location,IsIncome")]
+            TransactionEntity transactionEntity)
         {
             if (id != transactionEntity.Id)
             {
@@ -111,8 +161,10 @@ namespace expense_tracker.web.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(transactionEntity);
         }
 

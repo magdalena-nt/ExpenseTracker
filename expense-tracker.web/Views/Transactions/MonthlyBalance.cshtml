@@ -1,0 +1,52 @@
+﻿@using System.Globalization
+@model MonthlyBalanceViewModel
+
+@{
+    ViewData["Title"] = "Monthly Balance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<form asp-action="MonthlyBalance" method="get">
+    <label for="year">Year:</label>
+    <select id="year" name="year">
+        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 10; y--)
+        {
+            <option value="@y" selected="@(y == Model.Year)">@y</option>
+        }
+    </select>
+
+    <label for="month">Month:</label>
+    <select id="month" name="month">
+        @for (int m = 1; m <= 12; m++)
+        {
+            <option value="@m" selected="@(m == Model.Month)">@DateTimeFormatInfo.CurrentInfo.GetMonthName(m)</option>
+        }
+    </select>
+    <input type="submit" value="Show Balance"/>
+</form>
+
+<h2>Monthly Balance for @Model.Month/@Model.Year</h2>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Currency</th>
+        <th>Total Income</th>
+        <th>Total Expenses</th>
+        <th>Balance</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var balance in Model.BalancesByCurrency)
+    {
+        <tr>
+            <td>@balance.Currency</td>
+            <td>@balance.Currency @balance.TotalIncome.ToString("0.00", CultureInfo.InvariantCulture)</td>
+            <td>@balance.Currency @balance.TotalExpenses.ToString("0.00", CultureInfo.InvariantCulture)</td>
+            <td>@balance.Currency @balance.Balance.ToString("0.00", CultureInfo.InvariantCulture)</td>
+            <td>@(balance.IsInRed ? "RED" : "")</td>
+        </tr>
+    }
+    </tbody>
+</table>
