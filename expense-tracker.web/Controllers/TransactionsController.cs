@@ -1,8 +1,10 @@
+using System.Text;
 using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
 using expense_tracker.web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace expense_tracker.web.Controllers
 {
@@ -67,6 +69,16 @@ namespace expense_tracker.web.Controllers
             };
 
             return View(model);
+        }
+
+        public async Task<IActionResult> DownloadTransactions()
+        {
+            var transactions = await GetTransactions();
+            string json = JsonConvert.SerializeObject(transactions, Formatting.Indented);
+
+            var byteArray = Encoding.UTF8.GetBytes(json);
+
+            return File(byteArray, "application/json", "Transactions.json");
         }
 
         // GET: Transactions/Details/5
@@ -204,6 +216,11 @@ namespace expense_tracker.web.Controllers
         private bool TransactionEntityExists(int id)
         {
             return _context.Transactions.Any(e => e.Id == id);
+        }
+
+        public async Task<IList<TransactionEntity>> GetTransactions()
+        {
+            return await _context.Transactions.ToListAsync();
         }
     }
 }
