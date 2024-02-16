@@ -6,23 +6,28 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<form asp-action="MonthlyBalance" method="get">
-    <label for="year">Year:</label>
-    <select id="year" name="year">
-        @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 10; y--)
-        {
-            <option value="@y" selected="@(y == Model.Year)">@y</option>
-        }
-    </select>
-
-    <label for="month">Month:</label>
-    <select id="month" name="month">
-        @for (int m = 1; m <= 12; m++)
-        {
-            <option value="@m" selected="@(m == Model.Month)">@DateTimeFormatInfo.CurrentInfo.GetMonthName(m)</option>
-        }
-    </select>
-    <input type="submit" value="Show Balance"/>
+<form asp-action="MonthlyBalance" method="get" class="">
+    <div class="mx-3 mb-3 d-flex align-items-center">
+        <div class="mx-3">
+            <label for="year">Year:</label>
+            <select id="year" name="year">
+                @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 10; y--)
+                {
+                    <option value="@y" selected="@(y == Model.Year)">@y</option>
+                }
+            </select>
+        </div>
+        <div class="mx-3">
+            <label for="month">Month:</label>
+            <select id="month" name="month">
+                @for (int m = 1; m <= 12; m++)
+                {
+                    <option value="@m" selected="@(m == Model.Month)">@DateTimeFormatInfo.CurrentInfo.GetMonthName(m)</option>
+                }
+            </select>
+        </div>
+        <input type="submit" value="Show Balance" class="btn btn-primary py-1 mx-3"/>
+    </div>
 </form>
 
 <h2>Monthly Balance for @Model.Month/@Model.Year</h2>

@@ -1,11 +1,11 @@
 @model IEnumerable<expense_tracker.web.Data.Entity.TransactionEntity>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Transactions";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Index</h1>
+<h1>Transactions</h1>
 
 <p>
     <a asp-action="Create">Create New</a> | <a asp-action="Index">Show All</a> | <a asp-action="Expenses">Show Expenses</a> | <a asp-action="Incomes">Show Incomes</a> | <a asp-action="DownloadTransactions">Download File</a>
@@ -33,7 +33,7 @@
         </th>
         <th>
             @* @Html.DisplayNameFor(model => model.IsIncome) *@
-            Income?
+            Income
         </th>
         <th></th>
     </tr>

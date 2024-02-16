@@ -2,6 +2,7 @@ using System.Text;
 using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
 using expense_tracker.web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Newtonsoft.Json;
 
 namespace expense_tracker.web.Controllers
 {
+    [Authorize]
     public class TransactionsController : Controller
     {
         private readonly ApplicationDbContext _context;
