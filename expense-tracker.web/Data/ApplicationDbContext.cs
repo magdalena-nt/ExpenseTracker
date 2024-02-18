@@ -12,4 +12,13 @@ public class ApplicationDbContext : IdentityDbContext<CustomUserEntity>
     }
 
     public DbSet<TransactionEntity> Transactions { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.Entity<CustomUserEntity>()
+            .HasMany<TransactionEntity>(n => n.Transactions)
+            .WithOne(n => n.User)
+            .HasForeignKey(n => n.UserId);
+    }
 }

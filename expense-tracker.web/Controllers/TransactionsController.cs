@@ -83,8 +83,14 @@ namespace expense_tracker.web.Controllers
 
         public async Task<IActionResult> DownloadTransactions()
         {
-            var transactions = await GetTransactions();
-            string json = JsonConvert.SerializeObject(transactions, Formatting.Indented);
+            var transactions = (IList<TransactionEntity>)await _context.Transactions
+                .Where(t => t.UserId.Equals(_userManager.GetUserId(User)))
+                .OrderByDescending(t => t.Date).ToListAsync();
+            
+            var transactionEntities = 
+                _userManager.GetUserAsync(User).Result!.Transactions.OrderBy(t => t.Date);
+           
+            var json = JsonConvert.SerializeObject(transactionEntities, Formatting.Indented);
 
             var byteArray = Encoding.UTF8.GetBytes(json);
 
@@ -130,7 +136,7 @@ namespace expense_tracker.web.Controllers
             if (ModelState.IsValid)
             {
                 transactionEntity.UserId = _userManager.GetUserId(User)!;
-                transactionEntity.UserEntity = (await _userManager.GetUserAsync(User))!;
+                // transactionEntity.UserEntity = (await _userManager.GetUserAsync(User))!;
                 _context.Add(transactionEntity);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -170,10 +176,14 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
+            ModelState.Remove("UserId");
+            ModelState.Remove("UserEntity");
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    transactionEntity.UserId = _userManager.GetUserId(User)!;
                     _context.Update(transactionEntity);
                     await _context.SaveChangesAsync();
                 }
@@ -231,12 +241,6 @@ namespace expense_tracker.web.Controllers
         private bool TransactionEntityExists(int id)
         {
             return _context.Transactions.Any(e => e.Id == id);
-        }
-
-        public async Task<IList<TransactionEntity>> GetTransactions()
-        {
-            return await _context.Transactions.Where(t => t.UserId.Equals(_userManager.GetUserId(User)))
-                .OrderByDescending(t => t.Date).ToListAsync();
         }
     }
 }

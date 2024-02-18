@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Newtonsoft.Json;
 
 namespace expense_tracker.web.Data.Entity;
 
@@ -27,5 +28,7 @@ public class TransactionEntity
     public bool IsIncome { get; set; }
 
     public string UserId { get; set; }
-    public CustomUserEntity UserEntity { get; set; }
+
+    [JsonIgnore]
+    public CustomUserEntity User { get; set; }
 }
