@@ -1,4 +1,5 @@
 using System.Globalization;
+using expense_tracker.web.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using expense_tracker.web.Data;
@@ -24,6 +25,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
 });
+
+builder.Services.RegisterDIServices();
 
 var app = builder.Build();
 

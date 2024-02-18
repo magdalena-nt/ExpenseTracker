@@ -2,6 +2,7 @@ using System.Text;
 using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
 using expense_tracker.web.Models;
+using expense_tracker.web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +16,16 @@ namespace expense_tracker.web.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<CustomUserEntity> _userManager;
+        private readonly BalanceService _balanceService;
+        private readonly TransactionService _transactionService;
 
-        public TransactionsController(ApplicationDbContext context, UserManager<CustomUserEntity> userManager)
+        public TransactionsController(ApplicationDbContext context, UserManager<CustomUserEntity> userManager,
+            BalanceService balanceService, TransactionService transactionService)
         {
             _context = context;
             _userManager = userManager;
+            _balanceService = balanceService;
+            _transactionService = transactionService;
         }
 
         // GET: Transactions
@@ -33,7 +39,8 @@ namespace expense_tracker.web.Controllers
         {
             return View("Index",
                 await _context.Transactions
-                    // .Where(t => !t.Category && t.UserId.Equals(_userManager.GetUserId(User))).OrderByDescending(t => t.Date)
+                    .Where(t => t.Category < 0 && t.UserId.Equals(_userManager.GetUserId(User)))
+                    .OrderByDescending(t => t.Date)
                     .ToListAsync());
         }
 
@@ -41,8 +48,8 @@ namespace expense_tracker.web.Controllers
         {
             return View("Index",
                 await _context.Transactions
-                    // .Where(t => t.Category && t.UserId.Equals(_userManager.GetUserId(User)))
-                    // .OrderByDescending(t => t.Date)
+                    .Where(t => t.Category > 0 && t.UserId.Equals(_userManager.GetUserId(User)))
+                    .OrderByDescending(t => t.Date)
                     .ToListAsync());
         }
 
@@ -64,7 +71,7 @@ namespace expense_tracker.web.Controllers
                 {
                     // var incomes = group.Where(t => t.Category).Sum(t => t.Value);
                     // var expenses = group.Where(t => !t.Category).Sum(t => t.Value);
-                    return new BalanceByCurrency
+                    return new BalanceByCurrencyViewModel
                     {
                         // Currency = group.Key,
                         // TotalIncome = incomes,
@@ -86,13 +93,9 @@ namespace expense_tracker.web.Controllers
 
         public async Task<IActionResult> DownloadTransactions()
         {
-            var transactions = (IList<TransactionEntity>)await _context.Transactions
-                .Where(t => t.UserId.Equals(_userManager.GetUserId(User)))
-                .OrderByDescending(t => t.Date).ToListAsync();
-            
-            var transactionEntities = 
+            var transactionEntities =
                 _userManager.GetUserAsync(User).Result!.Transactions.OrderBy(t => t.Date);
-           
+
             var json = JsonConvert.SerializeObject(transactionEntities, Formatting.Indented);
 
             var byteArray = Encoding.UTF8.GetBytes(json);
@@ -108,8 +111,8 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionEntity = await _context.Transactions
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var transactionEntity = await _transactionService.FindTransactionById(id.Value);
+            
             if (transactionEntity == null)
             {
                 return NotFound();
@@ -125,27 +128,17 @@ namespace expense_tracker.web.Controllers
         }
 
         // POST: Transactions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            [Bind("Id,Value,Currency,Name,Note,Date,Location,IsIncome")]
-            TransactionEntity transactionEntity)
+        public async Task<IActionResult> Create(TransactionViewModel transactionVm)
         {
-            ModelState.Remove("UserId");
-            ModelState.Remove("UserEntity");
-
             if (ModelState.IsValid)
             {
-                transactionEntity.UserId = _userManager.GetUserId(User)!;
-                // transactionEntity.UserEntity = (await _userManager.GetUserAsync(User))!;
-                _context.Add(transactionEntity);
-                await _context.SaveChangesAsync();
+                await _transactionService.CreateTransaction(transactionVm, _userManager.GetUserId(User));
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(transactionEntity);
+            return View(transactionVm);
         }
 
         // GET: Transactions/Edit/5
@@ -166,12 +159,9 @@ namespace expense_tracker.web.Controllers
         }
 
         // POST: Transactions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-            [Bind("Id,Value,Currency,Name,Note,Date,Location,IsIncome")]
             TransactionEntity transactionEntity)
         {
             if (id != transactionEntity.Id)

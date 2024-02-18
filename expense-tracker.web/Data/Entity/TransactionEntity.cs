@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using expense_tracker.web.Models.Enums;
 using Newtonsoft.Json;
 
 namespace expense_tracker.web.Data.Entity;
@@ -29,23 +30,4 @@ public class TransactionEntity
 
     [JsonIgnore]
     public CustomUserEntity User { get; set; }
-}
-
-public enum Category
-{
-    Food = -1,
-    Utilities = -2,
-    Transportation = -3,
-    Apparel = -4,
-    Salary = 1,
-    Investments = 2,
-    Bonus = 3
-}
-
-public enum Currency
-{
-    EUR,
-    PLN,
-    USD,
-    GBP
 }
