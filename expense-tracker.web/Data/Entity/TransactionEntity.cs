@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
 
 namespace expense_tracker.web.Data.Entity;
@@ -11,24 +10,42 @@ public class TransactionEntity
 
     public decimal Value { get; set; }
 
-    [Column(TypeName = "nvarchar(3)")]
-    public string Currency { get; set; }
+    public Currency Currency { get; set; }
 
-    [Column(TypeName = "nvarchar(16)")]
+    [StringLength(16)]
     public string Name { get; set; }
 
-    [Column(TypeName = "nvarchar(64)")]
+    [StringLength(64)]
     public string? Note { get; set; }
 
     public DateTime Date { get; set; } = DateTime.Now;
 
-    [Column(TypeName = "nvarchar(64)")]
+    [StringLength(64)]
     public string? Location { get; set; }
 
-    public bool IsIncome { get; set; }
+    public Category Category { get; set; }
 
     public string UserId { get; set; }
 
     [JsonIgnore]
     public CustomUserEntity User { get; set; }
+}
+
+public enum Category
+{
+    Food = -1,
+    Utilities = -2,
+    Transportation = -3,
+    Apparel = -4,
+    Salary = 1,
+    Investments = 2,
+    Bonus = 3
+}
+
+public enum Currency
+{
+    EUR,
+    PLN,
+    USD,
+    GBP
 }

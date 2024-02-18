@@ -32,15 +32,18 @@ namespace expense_tracker.web.Controllers
         public async Task<IActionResult> Expenses()
         {
             return View("Index",
-                await _context.Transactions.Where(t => !t.IsIncome && t.UserId.Equals(_userManager.GetUserId(User)))
-                    .OrderByDescending(t => t.Date).ToListAsync());
+                await _context.Transactions
+                    // .Where(t => !t.Category && t.UserId.Equals(_userManager.GetUserId(User))).OrderByDescending(t => t.Date)
+                    .ToListAsync());
         }
 
         public async Task<IActionResult> Incomes()
         {
             return View("Index",
-                await _context.Transactions.Where(t => t.IsIncome && t.UserId.Equals(_userManager.GetUserId(User)))
-                    .OrderByDescending(t => t.Date).ToListAsync());
+                await _context.Transactions
+                    // .Where(t => t.Category && t.UserId.Equals(_userManager.GetUserId(User)))
+                    // .OrderByDescending(t => t.Date)
+                    .ToListAsync());
         }
 
         public async Task<IActionResult> MonthlyBalance(int year, int month)
@@ -59,14 +62,14 @@ namespace expense_tracker.web.Controllers
                 .GroupBy(t => t.Currency)
                 .Select(group =>
                 {
-                    var incomes = group.Where(t => t.IsIncome).Sum(t => t.Value);
-                    var expenses = group.Where(t => !t.IsIncome).Sum(t => t.Value);
+                    // var incomes = group.Where(t => t.Category).Sum(t => t.Value);
+                    // var expenses = group.Where(t => !t.Category).Sum(t => t.Value);
                     return new BalanceByCurrency
                     {
-                        Currency = group.Key,
-                        TotalIncome = incomes,
-                        TotalExpenses = expenses,
-                        Balance = incomes - expenses
+                        // Currency = group.Key,
+                        // TotalIncome = incomes,
+                        // TotalExpenses = expenses,
+                        // Balance = incomes - expenses
                     };
                 })
                 .ToList();
