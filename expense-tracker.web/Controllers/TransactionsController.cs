@@ -14,15 +14,13 @@ namespace expense_tracker.web.Controllers
     [Authorize]
     public class TransactionsController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<CustomUserEntity> _userManager;
         private readonly BalanceService _balanceService;
         private readonly TransactionService _transactionService;
 
-        public TransactionsController(ApplicationDbContext context, UserManager<CustomUserEntity> userManager,
+        public TransactionsController(UserManager<CustomUserEntity> userManager,
             BalanceService balanceService, TransactionService transactionService)
         {
-            _context = context;
             _userManager = userManager;
             _balanceService = balanceService;
             _transactionService = transactionService;
@@ -31,26 +29,18 @@ namespace expense_tracker.web.Controllers
         // GET: Transactions
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Transactions.Where(t =>
-                t.UserId.Equals(_userManager.GetUserId(User))).OrderByDescending(t => t.Date).ToListAsync());
+            return View(_transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User))
+                .OrderByDescending(t => t.Date).ToList());
         }
 
         public async Task<IActionResult> Expenses()
         {
-            return View("Index",
-                await _context.Transactions
-                    .Where(t => t.Category < 0 && t.UserId.Equals(_userManager.GetUserId(User)))
-                    .OrderByDescending(t => t.Date)
-                    .ToListAsync());
+            return View("Index", _transactionService.FindExpensesByUser(_userManager.GetUserId(User)));
         }
 
         public async Task<IActionResult> Incomes()
         {
-            return View("Index",
-                await _context.Transactions
-                    .Where(t => t.Category > 0 && t.UserId.Equals(_userManager.GetUserId(User)))
-                    .OrderByDescending(t => t.Date)
-                    .ToListAsync());
+            return View("Index", _transactionService.FindIncomesByUser(_userManager.GetUserId(User)));
         }
 
         public async Task<IActionResult> MonthlyBalance(int year, int month)
@@ -61,42 +51,18 @@ namespace expense_tracker.web.Controllers
                 month = DateTime.UtcNow.Month;
             }
 
-            var transactions = await _context.Transactions
-                .Where(t => t.Date.Year == year && t.Date.Month == month)
-                .ToListAsync();
+            var model = _balanceService.FindMonthlyBalanceByDateAndUser(year, month, _userManager.GetUserId(User));
 
-            var balanceByCurrency = transactions
-                .GroupBy(t => t.Currency)
-                .Select(group =>
-                {
-                    // var incomes = group.Where(t => t.Category).Sum(t => t.Value);
-                    // var expenses = group.Where(t => !t.Category).Sum(t => t.Value);
-                    return new BalanceByCurrencyViewModel
-                    {
-                        // Currency = group.Key,
-                        // TotalIncome = incomes,
-                        // TotalExpenses = expenses,
-                        // Balance = incomes - expenses
-                    };
-                })
-                .ToList();
-
-            var model = new MonthlyBalanceViewModel
-            {
-                Year = year,
-                Month = month,
-                BalancesByCurrency = balanceByCurrency
-            };
 
             return View(model);
         }
 
-        public async Task<IActionResult> DownloadTransactions()
+        public IActionResult DownloadTransactions()
         {
-            var transactionEntities =
-                _userManager.GetUserAsync(User).Result!.Transactions.OrderBy(t => t.Date);
+            var findTransactionsByUser = _transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User))
+                .OrderByDescending(t => t.Date);
 
-            var json = JsonConvert.SerializeObject(transactionEntities, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(findTransactionsByUser, Formatting.Indented);
 
             var byteArray = Encoding.UTF8.GetBytes(json);
 
@@ -111,8 +77,8 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionEntity = await _transactionService.FindTransactionById(id.Value);
-            
+            var transactionEntity = _transactionService.FindTransactionVmById(id.Value);
+
             if (transactionEntity == null)
             {
                 return NotFound();
@@ -149,71 +115,65 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionEntity = await _context.Transactions.FindAsync(id);
-            if (transactionEntity == null)
+            var transactionViewModel = _transactionService.FindTransactionVmById(id.Value);
+            if (transactionViewModel == null)
             {
                 return NotFound();
             }
 
-            return View(transactionEntity);
+            return View(transactionViewModel);
         }
 
         // POST: Transactions/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-            TransactionEntity transactionEntity)
+            TransactionViewModel transactionViewModel)
         {
-            if (id != transactionEntity.Id)
+            if (id != transactionViewModel.Id)
             {
                 return NotFound();
             }
 
-            ModelState.Remove("UserId");
-            ModelState.Remove("UserEntity");
+            var userId = _userManager.GetUserId(User);
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && userId != null)
             {
                 try
                 {
-                    transactionEntity.UserId = _userManager.GetUserId(User)!;
-                    _context.Update(transactionEntity);
-                    await _context.SaveChangesAsync();
+                    await _transactionService.EditTransactionById(id, userId, transactionViewModel);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TransactionEntityExists(transactionEntity.Id))
+                    if (_transactionService.FindTransactionVmById(id) == null)
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(transactionEntity);
+            return View(transactionViewModel);
         }
 
         // GET: Transactions/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public IActionResult Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var transactionEntity = await _context.Transactions
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (transactionEntity == null)
+            var transactionViewModel = _transactionService.FindTransactionVmById(id.Value);
+            if (transactionViewModel == null)
             {
                 return NotFound();
             }
 
-            return View(transactionEntity);
+            return View(transactionViewModel);
         }
 
         // POST: Transactions/Delete/5
@@ -221,19 +181,8 @@ namespace expense_tracker.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var transactionEntity = await _context.Transactions.FindAsync(id);
-            if (transactionEntity != null)
-            {
-                _context.Transactions.Remove(transactionEntity);
-            }
-
-            await _context.SaveChangesAsync();
+            await _transactionService.DeleteTransactionById(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TransactionEntityExists(int id)
-        {
-            return _context.Transactions.Any(e => e.Id == id);
         }
     }
 }

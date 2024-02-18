@@ -4,6 +4,7 @@ namespace expense_tracker.web.Models;
 
 public class TransactionViewModel
 {
+    public int Id { get; set; }
     public decimal Value { get; set; }
 
     public Currency Currency { get; set; }

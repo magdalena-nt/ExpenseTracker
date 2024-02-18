@@ -1,4 +1,6 @@
-@model expense_tracker.web.Data.Entity.TransactionEntity
+@* @model expense_tracker.web.Data.Entity.TransactionEntity *@
+@using expense_tracker.web.Models.Enums
+@model TransactionViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -8,7 +10,7 @@
 <h1>Edit</h1>
 
 <h4>TransactionEntity</h4>
-<hr />
+<hr/>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
@@ -21,36 +23,36 @@
             </div>
             <div class="form-group">
                 <label asp-for="Currency" class="control-label"></label>
-                <input asp-for="Currency" class="form-control" />
+                <select asp-for="Currency" asp-items="@(new SelectList(Enum.GetValues(typeof(Currency))))" class="form-control"></select>
                 <span asp-validation-for="Currency" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
+                <input asp-for="Name" class="form-control"/>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Note" class="control-label"></label>
-                <input asp-for="Note" class="form-control" />
+                <input asp-for="Note" class="form-control"/>
                 <span asp-validation-for="Note" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" />
+                <input asp-for="Date" class="form-control"/>
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Location" class="control-label"></label>
-                <input asp-for="Location" class="form-control" />
+                <input asp-for="Location" class="form-control"/>
                 <span asp-validation-for="Location" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Category" /> @Html.DisplayNameFor(model => model.Category)
-                </label>
+            <div class="form-group">
+                <label asp-for="Category" class="control-label"></label>
+                <select asp-for="Category" asp-items="@(new SelectList(Enum.GetValues(typeof(Category))))" class="form-control"></select>
+                <span asp-validation-for="Category" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary"/>
             </div>
         </form>
     </div>
@@ -61,5 +63,5 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

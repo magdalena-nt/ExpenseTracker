@@ -13,5 +13,9 @@ public class BalanceEntity
 
     public Currency Currency { get; set; }
     public decimal Balance { get; set; }
+    public decimal TotalExpenses { get; set; }
+    public decimal TotalIncome { get; set; }
+    public int Year { get; set; }
+    public int Month { get; set; }
     public int Quantity { get; set; }
 }
