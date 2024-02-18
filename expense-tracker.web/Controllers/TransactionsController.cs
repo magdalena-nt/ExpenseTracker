@@ -1,12 +1,10 @@
 using System.Text;
-using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
 using expense_tracker.web.Models;
 using expense_tracker.web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace expense_tracker.web.Controllers
@@ -29,18 +27,18 @@ namespace expense_tracker.web.Controllers
         // GET: Transactions
         public async Task<IActionResult> Index()
         {
-            return View(_transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User))
+            return View((await _transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User)))
                 .OrderByDescending(t => t.Date).ToList());
         }
 
         public async Task<IActionResult> Expenses()
         {
-            return View("Index", _transactionService.FindExpensesByUser(_userManager.GetUserId(User)));
+            return View("Index", await _transactionService.FindExpensesByUserAsync(_userManager.GetUserId(User)));
         }
 
         public async Task<IActionResult> Incomes()
         {
-            return View("Index", _transactionService.FindIncomesByUser(_userManager.GetUserId(User)));
+            return View("Index", await _transactionService.FindIncomesByUserAsync(_userManager.GetUserId(User)));
         }
 
         public async Task<IActionResult> MonthlyBalance(int year, int month)
@@ -51,15 +49,17 @@ namespace expense_tracker.web.Controllers
                 month = DateTime.UtcNow.Month;
             }
 
-            var model = _balanceService.FindMonthlyBalanceByDateAndUser(year, month, _userManager.GetUserId(User));
+            var model = await _balanceService.FindMonthlyBalanceByDateAndUser(year, month,
+                _userManager.GetUserId(User));
 
 
             return View(model);
         }
 
-        public IActionResult DownloadTransactions()
+        public async Task<IActionResult> DownloadTransactions()
         {
-            var findTransactionsByUser = _transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User))
+            var findTransactionsByUser =
+                (await _transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User)))
                 .OrderByDescending(t => t.Date);
 
             var json = JsonConvert.SerializeObject(findTransactionsByUser, Formatting.Indented);
@@ -77,7 +77,7 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionEntity = _transactionService.FindTransactionVmById(id.Value);
+            var transactionEntity = await _transactionService.FindTransactionVmById(id.Value);
 
             if (transactionEntity == null)
             {
@@ -115,7 +115,7 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionViewModel = _transactionService.FindTransactionVmById(id.Value);
+            var transactionViewModel = await _transactionService.FindTransactionVmById(id.Value);
             if (transactionViewModel == null)
             {
                 return NotFound();
@@ -139,19 +139,7 @@ namespace expense_tracker.web.Controllers
 
             if (ModelState.IsValid && userId != null)
             {
-                try
-                {
-                    await _transactionService.EditTransactionById(id, userId, transactionViewModel);
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (_transactionService.FindTransactionVmById(id) == null)
-                    {
-                        return NotFound();
-                    }
-
-                    throw;
-                }
+                await _transactionService.EditTransactionByIdAsync(id, transactionViewModel);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -160,14 +148,14 @@ namespace expense_tracker.web.Controllers
         }
 
         // GET: Transactions/Delete/5
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var transactionViewModel = _transactionService.FindTransactionVmById(id.Value);
+            var transactionViewModel = await _transactionService.FindTransactionVmById(id.Value);
             if (transactionViewModel == null)
             {
                 return NotFound();

@@ -48,9 +48,9 @@ public class TransactionService
         return transactionEntity;
     }
 
-    public TransactionViewModel? FindTransactionVmById(int id)
+    public async Task<TransactionViewModel?> FindTransactionVmById(int id)
     {
-        var transactionEntity = FindTransactionById(id).Result;
+        var transactionEntity = await FindTransactionById(id);
         if (transactionEntity != null)
         {
             return TransactionMapper.Map(transactionEntity);
@@ -59,9 +59,10 @@ public class TransactionService
         return null;
     }
 
-    public IEnumerable<TransactionViewModel> FindTransactionVMsByUser(string? userId)
+    public async Task<IEnumerable<TransactionViewModel>> FindTransactionVMsByUser(string? userId)
     {
-        var transactionEntities = _applicationDbContext.Transactions.Where(t => t.UserId.Equals(userId)).ToList();
+        var transactionEntities =
+            await _applicationDbContext.Transactions.Where(t => t.UserId.Equals(userId)).ToListAsync();
         var transactionVMs = transactionEntities.Select(TransactionMapper.Map).ToList();
 
         return transactionVMs;
@@ -79,7 +80,7 @@ public class TransactionService
         await _applicationDbContext.SaveChangesAsync();
     }
 
-    public async Task EditTransactionById(int id, string userId, TransactionViewModel transactionViewModel)
+    public async Task EditTransactionByIdAsync(int id, TransactionViewModel transactionViewModel)
     {
         var transactionEntity = await FindTransactionById(id);
         if (transactionEntity != null)
@@ -98,15 +99,17 @@ public class TransactionService
         await _applicationDbContext.SaveChangesAsync();
     }
 
-    public IEnumerable<TransactionViewModel> FindIncomesByUser(string? userId)
+    public async Task<IEnumerable<TransactionViewModel>> FindIncomesByUserAsync(string? userId)
     {
-        return FindTransactionVMsByUser(userId).Where(t => t.Category > 0)
+        var findTransactionVMsByUser = await FindTransactionVMsByUser(userId);
+        return findTransactionVMsByUser.Where(t => t.Category > 0)
             .OrderByDescending(t => t.Date).ToList();
     }
 
-    public IEnumerable<TransactionViewModel> FindExpensesByUser(string? userId)
+    public async Task<IEnumerable<TransactionViewModel>> FindExpensesByUserAsync(string? userId)
     {
-        return FindTransactionVMsByUser(userId).Where(t => t.Category < 0)
+        var findTransactionVMsByUser = await FindTransactionVMsByUser(userId);
+        return findTransactionVMsByUser.Where(t => t.Category < 0)
             .OrderByDescending(t => t.Date).ToList();
     }
 }

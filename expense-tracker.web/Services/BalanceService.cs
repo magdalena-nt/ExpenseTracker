@@ -69,10 +69,10 @@ public class BalanceService
         }
     }
 
-    public MonthlyBalanceViewModel FindMonthlyBalanceByDateAndUser(int year, int month, string? userId)
+    public async Task<MonthlyBalanceViewModel> FindMonthlyBalanceByDateAndUser(int year, int month, string? userId)
     {
-        var balanceEntities = _applicationDbContext.Balances
-            .Where(b => b.UserId.Equals(userId) && b.Year == year && b.Month == month).ToList();
+        var balanceEntities = await _applicationDbContext.Balances
+            .Where(b => b.UserId.Equals(userId) && b.Year == year && b.Month == month).ToListAsync();
         var balancesByCurrency = balanceEntities.Select(entity => new BalanceByCurrencyViewModel
         {
             Balance = entity.Balance,
