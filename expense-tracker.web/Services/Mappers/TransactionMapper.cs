@@ -1,29 +1,29 @@
 ﻿using expense_tracker.web.Data.Entity;
 using expense_tracker.web.Models;
+using expense_tracker.web.Models.DTOs;
 
 namespace expense_tracker.web.Services.Mappers;
 
 public static class TransactionMapper
 {
-    public static TransactionEntity Map(TransactionViewModel transactionViewModel, string userId)
+    public static TransactionViewModel MapVM(TransactionEntity transactionEntity)
     {
-        return new TransactionEntity
+        return new TransactionViewModel
         {
-            Currency = transactionViewModel.Currency,
-            UserId = userId,
-            Category = transactionViewModel.Category,
-            Date = transactionViewModel.Date,
-            Location = transactionViewModel.Location,
-            Name = transactionViewModel.Name,
-            Note = transactionViewModel.Note,
-            Value = transactionViewModel.Value,
-            Id = transactionViewModel.Id
+            Value = transactionEntity.Value,
+            Currency = transactionEntity.Currency,
+            Category = transactionEntity.Category,
+            Date = transactionEntity.Date,
+            Location = transactionEntity.Location,
+            Name = transactionEntity.Name,
+            Note = transactionEntity.Note,
+            Id = transactionEntity.Id
         };
     }
 
-    public static TransactionViewModel Map(TransactionEntity transactionEntity)
+    public static TransactionDTO MapDTO(TransactionEntity transactionEntity)
     {
-        return new TransactionViewModel
+        return new TransactionDTO
         {
             Value = transactionEntity.Value,
             Currency = transactionEntity.Currency,

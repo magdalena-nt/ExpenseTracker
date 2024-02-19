@@ -1,6 +1,9 @@
 ﻿using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
 using expense_tracker.web.Models;
+using expense_tracker.web.Models.DTOs;
+using expense_tracker.web.Models.Enums;
+using expense_tracker.web.Services.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.web.Services;
@@ -89,5 +92,28 @@ public class BalanceService
         };
 
         return model;
+    }
+
+    public async Task<IList<BalanceDTO>> FindAllBalancesByYearMonth(int year, int month)
+    {
+        var balanceEntities = await _applicationDbContext.Balances
+            .Where(b => b.Year == year && b.Month == month).ToListAsync();
+        var balances = balanceEntities.Select(BalanceMapper.MapBalanceDTO).ToList();
+        return balances;
+    }
+
+    public async Task<Dictionary<Currency, decimal>> FindBalanceSumByYearMonth(int year, int month)
+    {
+        var dictionary = (await FindAllBalancesByYearMonth(year, month)).GroupBy(b => b.Currency)
+            .ToDictionary(g => g.Key, g => g.Sum(b => b.Balance)).ToDictionary();
+        return dictionary;
+    }
+
+    public async Task<IEnumerable<KeyValuePair<Currency, decimal>>> FindBalanceSumByYearMonthCurrency(int year, int month, string currency)
+    {
+        var dictionary =
+            (await FindBalanceSumByYearMonth(year, month)).Where(g => g.Key.Equals(Enum.Parse<Currency>(currency))).ToDictionary();
+
+        return dictionary;
     }
 }
