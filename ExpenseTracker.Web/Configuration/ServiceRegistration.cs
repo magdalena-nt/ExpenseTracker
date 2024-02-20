@@ -9,6 +9,7 @@ public static class ServiceRegistration
     {
         services.AddTransient<BalanceService>();
         services.AddTransient<TransactionService>();
-        services.AddTransient<TransactionAPIService>();
+        services.AddTransient<TransactionsService>();
+        services.AddTransient<TransactionsProvider>();
     }
 }

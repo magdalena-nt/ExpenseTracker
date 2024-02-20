@@ -5,7 +5,6 @@ using expense_tracker.web.Services.API;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.web.Controllers.API
 {
@@ -14,13 +13,13 @@ namespace expense_tracker.web.Controllers.API
     [ApiController]
     public class TransactionsWriteController : ControllerBase
     {
-        private readonly TransactionAPIService _transactionService;
+        private readonly TransactionsService _transactionsService;
         private readonly UserManager<CustomUserEntity> _userManager;
 
-        public TransactionsWriteController(TransactionAPIService transactionService,
+        public TransactionsWriteController(TransactionsService transactionsService,
             UserManager<CustomUserEntity> userManager)
         {
-            _transactionService = transactionService;
+            _transactionsService = transactionsService;
             _userManager = userManager;
         }
 
@@ -32,7 +31,7 @@ namespace expense_tracker.web.Controllers.API
                 return BadRequest();
             }
 
-            await _transactionService.EditTransaction(transactionDTO);
+            await _transactionsService.EditTransaction(transactionDTO);
 
             return Ok();
         }
@@ -41,7 +40,7 @@ namespace expense_tracker.web.Controllers.API
         public async Task<ActionResult<TransactionDTO>> PostTransactionDTO(TransactionDTO transactionDTO)
         {
             var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            await _transactionService.CreateTransaction(transactionDTO, userId!);
+            await _transactionsService.CreateTransaction(transactionDTO, userId!);
             return CreatedAtAction("GetTransactionDTO", "TransactionsGet", new { id = transactionDTO.Id },
                 transactionDTO);
         }
@@ -49,7 +48,7 @@ namespace expense_tracker.web.Controllers.API
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTransactionDTO(int id)
         {
-            await _transactionService.DeleteTransactionById(id);
+            await _transactionsService.DeleteTransactionById(id);
 
             return NoContent();
         }

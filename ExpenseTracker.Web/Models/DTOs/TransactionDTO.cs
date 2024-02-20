@@ -1,6 +1,4 @@
-﻿using expense_tracker.web.Models.Enums;
-
-namespace expense_tracker.web.Models.DTOs;
+﻿namespace expense_tracker.web.Models.DTOs;
 
 public class TransactionDTO
 {

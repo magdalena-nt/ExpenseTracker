@@ -109,11 +109,17 @@ public class BalanceService
         return dictionary;
     }
 
-    public async Task<IEnumerable<KeyValuePair<Currency, decimal>>> FindBalanceSumByYearMonthCurrency(int year, int month, string currency)
+    public async Task<BalanceSumByYearMonthCurrencyDTO> FindBalanceSumByYearMonthCurrency(int year,
+        int month, string currency)
     {
         var dictionary =
-            (await FindBalanceSumByYearMonth(year, month)).Where(g => g.Key.Equals(Enum.Parse<Currency>(currency))).ToDictionary();
-
-        return dictionary;
+            (await FindBalanceSumByYearMonth(year, month)).Where(g => g.Key.Equals(Enum.Parse<Currency>(currency)))
+            .ToDictionary();
+        var result = new BalanceSumByYearMonthCurrencyDTO
+        {
+            Currency = currency,
+            Sum = dictionary.First().Value
+        };
+        return result;
     }
 }

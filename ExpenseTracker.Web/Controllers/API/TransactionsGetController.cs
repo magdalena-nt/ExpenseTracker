@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using expense_tracker.web.Data;
 using expense_tracker.web.Models.DTOs;
 using expense_tracker.web.Models.Enums;
 using expense_tracker.web.Services;
 using expense_tracker.web.Services.API;
+using Microsoft.AspNetCore.Mvc;
 
 namespace expense_tracker.web.Controllers.API
 {
@@ -18,44 +12,44 @@ namespace expense_tracker.web.Controllers.API
     public class TransactionsGetController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly TransactionAPIService _transactionService;
+        private readonly TransactionsProvider _transactionsProvider;
         private readonly BalanceService _balanceService;
 
-        public TransactionsGetController(ApplicationDbContext context, TransactionAPIService transactionService,
-            BalanceService balanceService)
+        public TransactionsGetController(ApplicationDbContext context, BalanceService balanceService,
+            TransactionsProvider transactionsProvider)
         {
             _context = context;
-            _transactionService = transactionService;
             _balanceService = balanceService;
+            _transactionsProvider = transactionsProvider;
         }
 
         // GET: api/Get
         [HttpGet]
         public async Task<IEnumerable<TransactionDTO>> GetTransactions() =>
-            await _transactionService.FindAllTransactionDTOs();
+            await _transactionsProvider.FindAllTransactionDTOs();
 
 
         // GET: api/Get/expenses
         [HttpGet("expenses")]
-        public async Task<IEnumerable<TransactionDTO>> GetExpenses() => await _transactionService.FindExpensesDTOs();
+        public async Task<IEnumerable<TransactionDTO>> GetExpenses() => await _transactionsProvider.FindExpensesDTOs();
 
 
         // GET: api/Get/expenses/2024/2
         [HttpGet("expenses/{year}/{month}")]
         public async Task<IEnumerable<TransactionDTO>> GetExpensesByYearMonth(int year, int month) =>
-            await _transactionService.FindExpensesDTOsByYearMonth(year, month);
+            await _transactionsProvider.FindExpensesDTOsByYearMonth(year, month);
 
 
         // GET: api/Get/income
         [HttpGet("income")]
         public async Task<IEnumerable<TransactionDTO>> GetIncome() =>
-            await _transactionService.FindIncomeDTOs();
+            await _transactionsProvider.FindIncomeDTOs();
 
 
         // GET: api/Get/income/2024/2
         [HttpGet("income/{year}/{month}")]
         public async Task<IEnumerable<TransactionDTO>> GetIncomeByYearMonth(int year, int month) =>
-            await _transactionService.FindIncomeDTOsByYearMonth(year, month);
+            await _transactionsProvider.FindIncomeDTOsByYearMonth(year, month);
 
 
         // GET: api/Get/5
@@ -74,7 +68,7 @@ namespace expense_tracker.web.Controllers.API
 
         [HttpGet("categories")]
         public async Task<Dictionary<string, decimal>> GetTransactionSumGroupedByCategory() =>
-            await _transactionService.FindTransactionSumGroupedByCategory();
+            await _transactionsProvider.FindTransactionSumGroupedByCategory();
 
 
         [HttpGet("balance/{year}/{month}")]
@@ -84,7 +78,7 @@ namespace expense_tracker.web.Controllers.API
 
 
         [HttpGet("balance/{year}/{month}/{currency}")]
-        public async Task<IEnumerable<KeyValuePair<Currency, decimal>>> GetBalanceSumByYearMonthCurrency(int year,
+        public async Task<BalanceSumByYearMonthCurrencyDTO> GetBalanceSumByYearMonthCurrency(int year,
             int month, string currency) =>
             await _balanceService.FindBalanceSumByYearMonthCurrency(year, month, currency);
     }
