@@ -12,11 +12,6 @@ namespace expense_tracker.web.Auth;
 
 public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    // public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
-    //     UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
-    // {
-    // }
-
     private readonly ApplicationDbContext _applicationDbContext;
     private readonly UserManager<CustomUserEntity> _userManager;
 

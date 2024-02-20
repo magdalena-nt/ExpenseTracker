@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "expense-tracker.web", "expense-tracker.web\expense-tracker.web.csproj", "{EC2DA395-E938-4655-8800-0CABCA224391}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpenseTracker.Web", "ExpenseTracker.Web\ExpenseTracker.Web.csproj", "{EC2DA395-E938-4655-8800-0CABCA224391}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
