@@ -1,9 +1,11 @@
 using System.Globalization;
+using expense_tracker.web.Auth;
 using expense_tracker.web.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using expense_tracker.web.Data;
 using expense_tracker.web.Data.Entity;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +29,9 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 builder.Services.RegisterDIServices();
+
+builder.Services.AddAuthentication("BasicAuthentication")
+    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
 
 var app = builder.Build();
 
