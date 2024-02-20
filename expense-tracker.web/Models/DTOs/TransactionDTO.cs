@@ -7,7 +7,7 @@ public class TransactionDTO
     public int Id { get; set; }
     public decimal Value { get; set; }
 
-    public Currency Currency { get; set; }
+    public string Currency { get; set; }
 
     public string Name { get; set; }
 
@@ -17,5 +17,5 @@ public class TransactionDTO
 
     public string? Location { get; set; }
 
-    public Category Category { get; set; }
+    public string Category { get; set; }
 }

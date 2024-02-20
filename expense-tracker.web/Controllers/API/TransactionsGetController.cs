@@ -9,18 +9,19 @@ using expense_tracker.web.Data;
 using expense_tracker.web.Models.DTOs;
 using expense_tracker.web.Models.Enums;
 using expense_tracker.web.Services;
+using expense_tracker.web.Services.API;
 
 namespace expense_tracker.web.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GetController : ControllerBase
+    public class TransactionsGetController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly TransactionService _transactionService;
+        private readonly TransactionAPIService _transactionService;
         private readonly BalanceService _balanceService;
 
-        public GetController(ApplicationDbContext context, TransactionService transactionService,
+        public TransactionsGetController(ApplicationDbContext context, TransactionAPIService transactionService,
             BalanceService balanceService)
         {
             _context = context;
@@ -72,7 +73,7 @@ namespace expense_tracker.web.Controllers.API
         }
 
         [HttpGet("categories")]
-        public async Task<Dictionary<Category, decimal>> GetTransactionSumGroupedByCategory() =>
+        public async Task<Dictionary<string, decimal>> GetTransactionSumGroupedByCategory() =>
             await _transactionService.FindTransactionSumGroupedByCategory();
 
 
