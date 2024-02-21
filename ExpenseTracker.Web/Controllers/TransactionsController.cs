@@ -14,31 +14,31 @@ namespace expense_tracker.web.Controllers
     {
         private readonly UserManager<CustomUserEntity> _userManager;
         private readonly BalanceService _balanceService;
-        private readonly TransactionService _transactionService;
+        private readonly TransactionsService _transactionsService;
 
         public TransactionsController(UserManager<CustomUserEntity> userManager,
-            BalanceService balanceService, TransactionService transactionService)
+            BalanceService balanceService, TransactionsService transactionsService)
         {
             _userManager = userManager;
             _balanceService = balanceService;
-            _transactionService = transactionService;
+            _transactionsService = transactionsService;
         }
 
         // GET: Transactions
         public async Task<IActionResult> Index()
         {
-            return View((await _transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User)))
+            return View((await _transactionsService.FindTransactionVMsByUser(_userManager.GetUserId(User)))
                 .OrderByDescending(t => t.Date).ToList());
         }
 
         public async Task<IActionResult> Expenses()
         {
-            return View("Index", await _transactionService.FindExpensesByUserAsync(_userManager.GetUserId(User)));
+            return View("Index", await _transactionsService.FindExpensesByUserAsync(_userManager.GetUserId(User)));
         }
 
         public async Task<IActionResult> Incomes()
         {
-            return View("Index", await _transactionService.FindIncomesByUserAsync(_userManager.GetUserId(User)));
+            return View("Index", await _transactionsService.FindIncomesByUserAsync(_userManager.GetUserId(User)));
         }
 
         public async Task<IActionResult> MonthlyBalance(int year, int month)
@@ -59,7 +59,7 @@ namespace expense_tracker.web.Controllers
         public async Task<IActionResult> DownloadTransactions()
         {
             var findTransactionsByUser =
-                (await _transactionService.FindTransactionVMsByUser(_userManager.GetUserId(User)))
+                (await _transactionsService.FindTransactionVMsByUser(_userManager.GetUserId(User)))
                 .OrderByDescending(t => t.Date);
 
             var json = JsonConvert.SerializeObject(findTransactionsByUser, Formatting.Indented);
@@ -77,7 +77,7 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionEntity = await _transactionService.FindTransactionVmById(id.Value);
+            var transactionEntity = await _transactionsService.FindTransactionVmById(id.Value);
 
             if (transactionEntity == null)
             {
@@ -100,7 +100,7 @@ namespace expense_tracker.web.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _transactionService.CreateTransaction(transactionVm, _userManager.GetUserId(User));
+                await _transactionsService.CreateTransaction(transactionVm, _userManager.GetUserId(User));
                 return RedirectToAction(nameof(Index));
             }
 
@@ -115,7 +115,7 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionViewModel = await _transactionService.FindTransactionVmById(id.Value);
+            var transactionViewModel = await _transactionsService.FindTransactionVmById(id.Value);
             if (transactionViewModel == null)
             {
                 return NotFound();
@@ -139,7 +139,7 @@ namespace expense_tracker.web.Controllers
 
             if (ModelState.IsValid && userId != null)
             {
-                await _transactionService.EditTransactionByIdAsync(id, transactionViewModel);
+                await _transactionsService.EditTransactionByIdAsync(id, transactionViewModel);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -155,7 +155,7 @@ namespace expense_tracker.web.Controllers
                 return NotFound();
             }
 
-            var transactionViewModel = await _transactionService.FindTransactionVmById(id.Value);
+            var transactionViewModel = await _transactionsService.FindTransactionVmById(id.Value);
             if (transactionViewModel == null)
             {
                 return NotFound();
@@ -169,7 +169,7 @@ namespace expense_tracker.web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _transactionService.DeleteTransactionById(id);
+            await _transactionsService.DeleteTransactionById(id);
             return RedirectToAction(nameof(Index));
         }
     }

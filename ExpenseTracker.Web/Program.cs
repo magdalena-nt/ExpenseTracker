@@ -30,8 +30,14 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 builder.Services.RegisterDIServices();
 
-builder.Services.AddAuthentication("BasicAuthentication")
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+    })
     .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
+
 
 var app = builder.Build();
 

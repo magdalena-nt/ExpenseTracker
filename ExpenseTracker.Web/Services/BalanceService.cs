@@ -20,15 +20,13 @@ public class BalanceService
     public async Task UpdateBalance(TransactionEntity transactionEntity)
     {
         var currentBalance = await GetCurrentBalance(transactionEntity);
+
         if (currentBalance != null)
         {
-            {
-                currentBalance.Quantity++;
-                currentBalance.TotalIncome += transactionEntity.Value > 0 ? transactionEntity.Value : 0;
-                currentBalance.TotalExpenses += transactionEntity.Value < 0 ? transactionEntity.Value : 0;
-                currentBalance.Balance = currentBalance.TotalIncome + currentBalance.TotalExpenses;
-                _applicationDbContext.Update(currentBalance);
-            }
+            currentBalance.Quantity++;
+            currentBalance.TotalIncome += Math.Max(transactionEntity.Value, 0);
+            currentBalance.TotalExpenses += Math.Min(transactionEntity.Value, 0);
+            currentBalance.Balance = currentBalance.TotalIncome + currentBalance.TotalExpenses;
         }
         else
         {
@@ -38,8 +36,8 @@ public class BalanceService
                 Currency = transactionEntity.Currency,
                 Quantity = 1,
                 UserId = transactionEntity.UserId,
-                TotalExpenses = transactionEntity.Value > 0 ? 0 : transactionEntity.Value,
-                TotalIncome = transactionEntity.Value > 0 ? transactionEntity.Value : 0,
+                TotalExpenses = Math.Min(transactionEntity.Value, 0),
+                TotalIncome = Math.Max(transactionEntity.Value, 0),
                 Year = transactionEntity.Date.Year,
                 Month = transactionEntity.Date.Month
             };
@@ -51,12 +49,11 @@ public class BalanceService
 
     private async Task<BalanceEntity?> GetCurrentBalance(TransactionEntity transactionEntity)
     {
-        var currentBalance = await _applicationDbContext.Balances
-            .FirstOrDefaultAsync(b =>
-                b.UserId.Equals(transactionEntity.UserId) && b.Currency == transactionEntity.Currency &&
-                b.Year == transactionEntity.Date.Year
-                && b.Month == transactionEntity.Date.Month);
-        return currentBalance;
+        return await _applicationDbContext.Balances.FirstOrDefaultAsync(b =>
+            b.UserId.Equals(transactionEntity.UserId) &&
+            b.Currency == transactionEntity.Currency &&
+            b.Year == transactionEntity.Date.Year &&
+            b.Month == transactionEntity.Date.Month);
     }
 
     public async Task ClearFromBalance(TransactionEntity transactionEntity)
@@ -109,9 +106,14 @@ public class BalanceService
         return dictionary;
     }
 
-    public async Task<BalanceSumByYearMonthCurrencyDTO> FindBalanceSumByYearMonthCurrency(int year,
+    public async Task<BalanceSumByYearMonthCurrencyDTO?> FindBalanceSumByYearMonthCurrency(int year,
         int month, string currency)
     {
+        if (!Enum.GetNames(typeof(Currency)).Contains(currency))
+        {
+            return null;
+        }
+
         var dictionary =
             (await FindBalanceSumByYearMonth(year, month)).Where(g => g.Key.Equals(Enum.Parse<Currency>(currency)))
             .ToDictionary();

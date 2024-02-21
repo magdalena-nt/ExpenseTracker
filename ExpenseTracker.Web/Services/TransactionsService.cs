@@ -8,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.web.Services;
 
-public class TransactionService
+public class TransactionsService
 {
     private readonly ApplicationDbContext _applicationDbContext;
     private readonly BalanceService _balanceService;
 
-    public TransactionService(ApplicationDbContext applicationDbContext, BalanceService balanceService)
+    public TransactionsService(ApplicationDbContext applicationDbContext, BalanceService balanceService)
     {
         _applicationDbContext = applicationDbContext;
         _balanceService = balanceService;

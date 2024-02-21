@@ -8,8 +8,8 @@ public static class ServiceRegistration
     public static void RegisterDIServices(this IServiceCollection services)
     {
         services.AddTransient<BalanceService>();
-        services.AddTransient<TransactionService>();
         services.AddTransient<TransactionsService>();
-        services.AddTransient<TransactionsProvider>();
+        services.AddTransient<TransactionsAPIService>();
+        services.AddTransient<TransactionsAPIProvider>();
     }
 }

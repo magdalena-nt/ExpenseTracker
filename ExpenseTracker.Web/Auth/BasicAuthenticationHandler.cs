@@ -15,8 +15,10 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
     private readonly ApplicationDbContext _applicationDbContext;
     private readonly UserManager<CustomUserEntity> _userManager;
 
-    public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
-        UrlEncoder encoder, ApplicationDbContext applicationDbContext,
+    public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ApplicationDbContext applicationDbContext,
         UserManager<CustomUserEntity> userManager) : base(options, logger, encoder)
     {
         _applicationDbContext = applicationDbContext;
@@ -39,7 +41,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
 
         if (!authorizationHeader.StartsWith("basic ", StringComparison.OrdinalIgnoreCase))
         {
-            return AuthenticateResult.Fail("No basic");
+            return AuthenticateResult.Fail("No \"basic\" keyword");
         }
 
         var token = authorizationHeader.Substring(6);
@@ -48,7 +50,7 @@ public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSc
         var credentials = credentialAsString.Split(":");
         if (credentials.Length != 2)
         {
-            return AuthenticateResult.Fail("No user:password");
+            return AuthenticateResult.Fail("No user:password in the field");
         }
 
         var username = credentials[0].ToUpper();

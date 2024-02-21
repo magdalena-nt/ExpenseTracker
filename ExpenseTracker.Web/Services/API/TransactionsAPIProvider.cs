@@ -6,15 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.web.Services.API;
 
-public class TransactionsProvider
+public class TransactionsAPIProvider
 {
     private readonly ApplicationDbContext _applicationDbContext;
-    private readonly BalanceService _balanceService;
 
-    public TransactionsProvider(ApplicationDbContext applicationDbContext, BalanceService balanceService)
+    public TransactionsAPIProvider(ApplicationDbContext applicationDbContext)
     {
         _applicationDbContext = applicationDbContext;
-        _balanceService = balanceService;
     }
 
 

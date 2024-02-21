@@ -6,23 +6,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace expense_tracker.web.Services.API;
 
-public class TransactionsService
+public class TransactionsAPIService
 {
     private readonly ApplicationDbContext _applicationDbContext;
     private readonly BalanceService _balanceService;
-    private readonly TransactionsProvider _transactionsProvider;
+    private readonly TransactionsAPIProvider _transactionsApiProvider;
 
-    public TransactionsService(ApplicationDbContext applicationDbContext, BalanceService balanceService,
-        TransactionsProvider transactionsProvider)
+    public TransactionsAPIService(ApplicationDbContext applicationDbContext, BalanceService balanceService,
+        TransactionsAPIProvider transactionsApiProvider)
     {
         _applicationDbContext = applicationDbContext;
         _balanceService = balanceService;
-        _transactionsProvider = transactionsProvider;
+        _transactionsApiProvider = transactionsApiProvider;
     }
 
     public async Task DeleteTransactionById(int id)
     {
-        var transactionEntity = await _transactionsProvider.FindTransactionById(id);
+        var transactionEntity = await _transactionsApiProvider.FindTransactionById(id);
         if (transactionEntity != null)
         {
             await _balanceService.ClearFromBalance(transactionEntity);
@@ -41,7 +41,7 @@ public class TransactionsService
 
     public async Task EditTransaction(TransactionDTO transactionDTO)
     {
-        var transaction = await _transactionsProvider.FindTransactionById(transactionDTO.Id);
+        var transaction = await _transactionsApiProvider.FindTransactionById(transactionDTO.Id);
         if (transaction != null)
         {
             transaction.Category = Enum.Parse<Category>(transactionDTO.Category);
